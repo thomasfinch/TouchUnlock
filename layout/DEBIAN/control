@@ -1,0 +1,9 @@
+Package: com.thomasfinch.touchunlock
+Name: TouchUnlock
+Depends: mobilesubstrate
+Version: 0.1
+Architecture: iphoneos-arm
+Description: Unlock using TouchID without a passcode
+Maintainer: Thomas Finch <tomf64@gmail.com>
+Author: Thomas Finch <tomf64@gmail.com>
+Section: Tweaks
