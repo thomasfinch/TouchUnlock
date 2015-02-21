@@ -15,17 +15,23 @@
 
 %end
 
+%hook SBLockScreenManager
+
+- (void)unlockUIFromSource:(int)arg1 withOptions:(id)arg2 {
+	[[%c(SBUIBiometricEventMonitor) sharedInstance] _stopMatching];
+	%orig;
+}
+
+%end
+
 @interface TouchUnlockController : NSObject
 @end
 
 @implementation TouchUnlockController
 
 -(void)biometricEventMonitor: (id)monitor handleBiometricEvent: (unsigned)event {
-   // NSLog(@"TOUCHUNLOCK DELEGATE GOT BIOMETRIC EVENT: %u",event);
-   if (event == 2 && ![[%c(SBDeviceLockController) sharedController] deviceHasPasscodeSet]) { //Event 2 is TouchIDFingerHeld
-   		[[%c(SBUIBiometricEventMonitor) sharedInstance] _stopMatching];
-        [[%c(SBLockScreenManager) sharedInstance] unlockUIFromSource:0 withOptions:nil];
-    }
+	if (event == 2 && ![[%c(SBDeviceLockController) sharedController] deviceHasPasscodeSet]) //Event 2 is TouchIDFingerHeld
+   		[[%c(SBLockScreenManager) sharedInstance] unlockUIFromSource:0 withOptions:nil];
 }
 
 -(void)startMonitoringEvents {
