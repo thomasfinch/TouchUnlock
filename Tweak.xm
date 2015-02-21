@@ -1,15 +1,16 @@
 %hook SBUIBiometricEventMonitor
 
-//If either of these methods are enabled, they prevent touchID events from being sent to
-//the touch unlock controller while the device is locked and a passcode isn't enabled.
-//So, we make them do nothing if the device doesn't have a passcode, so this tweak can work.
-- (void)noteScreenDidTurnOff {
-    if ([[%c(SBDeviceLockController) sharedController] deviceHasPasscodeSet])
-        %orig;
+- (BOOL)hasEnrolledIdentities {
+	return YES;
 }
-- (void)noteScreenWillTurnOff {
-    if ([[%c(SBDeviceLockController) sharedController] deviceHasPasscodeSet])
-        %orig;
+
+- (void)_reevaluateMatching {
+	if ([[%c(SBDeviceLockController) sharedController] deviceHasPasscodeSet])
+		%orig;
+	else if (MSHookIvar<BOOL>(self, "_screenIsOff"))
+		[self _stopMatching];
+	else
+		[self _startMatching];
 }
 
 %end
@@ -20,9 +21,11 @@
 @implementation TouchUnlockController
 
 -(void)biometricEventMonitor: (id)monitor handleBiometricEvent: (unsigned)event {
-   NSLog(@"TOUCHUNLOCK DELEGATE GOT BIOMETRIC EVENT: %u",event);
-   if (event == 2 && ![[%c(SBDeviceLockController) sharedController] deviceHasPasscodeSet]) //Event 2 is TouchIDFingerHeld
+   // NSLog(@"TOUCHUNLOCK DELEGATE GOT BIOMETRIC EVENT: %u",event);
+   if (event == 2 && ![[%c(SBDeviceLockController) sharedController] deviceHasPasscodeSet]) { //Event 2 is TouchIDFingerHeld
+   		[[%c(SBUIBiometricEventMonitor) sharedInstance] _stopMatching];
         [[%c(SBLockScreenManager) sharedInstance] unlockUIFromSource:0 withOptions:nil];
+    }
 }
 
 -(void)startMonitoringEvents {
@@ -36,6 +39,6 @@
 @end
 
 %ctor {
-   TouchUnlockController *unlockController = [[TouchUnlockController alloc] init];
-   [unlockController startMonitoringEvents];
+	TouchUnlockController *unlockController = [[TouchUnlockController alloc] init];
+	[unlockController startMonitoringEvents];
 }
