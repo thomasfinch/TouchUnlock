@@ -1,4 +1,4 @@
-ARCHS = arm64
+ARCHS = arm64 armv7
 THEOS_DEVICE_IP = localhost
 THEOS_DEVICE_PORT = 2222
 THEOS_BUILD_DIR = debs
